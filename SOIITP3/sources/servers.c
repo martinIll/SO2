@@ -148,7 +148,7 @@ void  getDiskInfo(char* keywords[],int index){
     perror("error al obtener estadisticas de fs");
     return;
   }
-  printf("%ld %ld\n",buf->f_blocks,buf->f_bsize);
+  printf("%ld %d\n",buf->f_blocks,buf->f_bsize);
   sprintf(keywords[index],"%ld GB",(buf->f_blocks*(unsigned)buf->f_bsize)/(1024*1024*1024));
   sprintf(keywords[index+1],"%ld GB",(buf->f_bfree*(unsigned)buf->f_bsize)/(1024*1024*1024));
 }
