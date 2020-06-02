@@ -12,6 +12,8 @@
 #define PORT 8082
 #define TAM 256
 
+int32_t findUser(struct passwd* entry,const char* username);
+
 int callback_list_users (const struct _u_request * request, struct _u_response * response, void * user_data) {
   struct passwd* entry=getpwent();
   json_t *array=json_array();
@@ -36,8 +38,16 @@ int callback_create_user (const struct _u_request * request, struct _u_response 
   char buffer[TAM];
   json_t* body=ulfius_get_json_body_request(request,NULL);
   const char *username=json_string_value(json_object_get(body,"username")); 
-   char password[TAM];
+  char password[TAM];
   sprintf(password,"%c%s%c",34,json_string_value(json_object_get(body,"password")),34);
+  
+  struct passwd* entry=calloc(1,sizeof(struct passwd*));
+  if(findUser(entry,username)){
+    body=json_pack("{s:s}",
+    "description","El nombre de usuario solicitado ya existe");
+    ulfius_set_json_body_response(response, 409, NULL);
+    return U_CALLBACK_CONTINUE;
+  }
 
   if(crypt(password,"A1")==NULL){
     perror("error encriptando contraseña");
@@ -46,30 +56,23 @@ int callback_create_user (const struct _u_request * request, struct _u_response 
     return U_CALLBACK_CONTINUE;
   }
   
-  sprintf(buffer,"sudo useradd -p %s %s > /home/martin/salida",password,username);
+  sprintf(buffer,"sudo useradd -p %s %s",password,username);
   time_t tiempo = time(0);
   struct tm *tlocal = localtime(&tiempo);  
   strftime(buffer,TAM,"%d/%m/%y %H:%M:%S",tlocal);
 
-  struct passwd* entry=getpwent();
-  int32_t found=0;
-  while(entry!=NULL){
-    if(!(strcmp(entry->pw_name,username))){
-      body=json_pack("{s:i,s:s,s:s}",
-        "id",entry->pw_uid,
-        "username",entry->pw_name,
-        "created_at",buffer
-      );
-      found=1;
-      break;
-    }
-    entry=getpwent();
-  }
-
-  if(!found){
+    
+  if(!findUser(entry,username)){
     body=json_pack("{s:s}",
     "error","error creando usuario en el sistema");
     ulfius_set_json_body_response(response, 500, body);
+    return U_CALLBACK_CONTINUE;
+  }else{
+    body=json_pack("{s:i,s:s,s:s}",
+      "id",entry->pw_uid,
+      "username",entry->pw_name,
+      "created_at",buffer
+    );
   }
 
   endpwent();
@@ -102,5 +105,18 @@ int main(void) {
   printf("End framework\n");
   ulfius_stop_framework(&instance);
   ulfius_clean_instance(&instance);
+  return 0;
+}
+
+int32_t findUser(struct passwd* entry,const char* username){
+  entry=getpwent();
+  while(entry!=NULL){
+    if(!(strcmp(entry->pw_name,username))){
+      endpwent();
+      return 1;
+    }
+    entry=getpwent();
+  }
+  endpwent();
   return 0;
 }
