@@ -61,7 +61,7 @@ int callback_create_user (const struct _u_request * request, struct _u_response 
     perror("error encriptando contraseña");
 
     ulfius_set_json_body_response(response, 500, body);
-    return U_CALLBACK_ERROR;
+    return U_CALLBACK_CONTINUE;
   }
   
   sprintf(buffer,"sudo useradd -p %s %s",password,username);
@@ -74,7 +74,7 @@ int callback_create_user (const struct _u_request * request, struct _u_response 
     body=json_pack("{s:s}",
     "error","error creando usuario en el sistema");
     ulfius_set_json_body_response(response, 500, body);
-    return U_CALLBACK_ERROR;
+    return U_CALLBACK_CONTINUE;
   }else{
     body=json_pack("{s:i,s:s,s:s}",
       "id",entry->pw_uid,
