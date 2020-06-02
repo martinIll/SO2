@@ -69,7 +69,7 @@ int callback_create_user (const struct _u_request * request, struct _u_response 
   struct tm *tlocal = localtime(&tiempo);  
   strftime(buffer,TAM,"%d/%m/%y %H:%M:%S",tlocal);
 
-    
+  entry=calloc(1,sizeof(struct passwd*));  
   if(!findUser(entry,username)){
     body=json_pack("{s:s}",
     "error","error creando usuario en el sistema");
