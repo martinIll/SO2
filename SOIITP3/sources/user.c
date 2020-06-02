@@ -35,8 +35,16 @@ int callback_list_users (const struct _u_request * request, struct _u_response *
 }
 
 int callback_create_user (const struct _u_request * request, struct _u_response * response, void * user_data) {
-  char buffer[TAM];
   json_t* body=ulfius_get_json_body_request(request,NULL);
+  char buffer[TAM];
+  
+  if(json_object_get(body,"username")==NULL || json_object_get(body,"password")==NULL || !json_is_string(json_object_get(body,"username")) || !json_is_string(json_object_get(body,"password")) ){
+    body=json_pack("{s:s}",
+    "description","el nombre de usuario y la contraseña deben ser cadenas de texto.");
+    ulfius_set_json_body_response(response, 400, body);
+    return U_CALLBACK_COMPLETE;
+  }
+
   const char *username=json_string_value(json_object_get(body,"username")); 
   char password[TAM];
   sprintf(password,"%c%s%c",34,json_string_value(json_object_get(body,"password")),34);
@@ -45,15 +53,15 @@ int callback_create_user (const struct _u_request * request, struct _u_response 
   if(findUser(entry,username)){
     body=json_pack("{s:s}",
     "description","El nombre de usuario solicitado ya existe");
-    ulfius_set_json_body_response(response, 409, NULL);
-    return U_CALLBACK_CONTINUE;
+    ulfius_set_json_body_response(response, 409, body);
+    return U_CALLBACK_COMPLETE;
   }
 
   if(crypt(password,"A1")==NULL){
     perror("error encriptando contraseña");
 
-    ulfius_set_json_body_response(response, 500, NULL);
-    return U_CALLBACK_CONTINUE;
+    ulfius_set_json_body_response(response, 500, body);
+    return U_CALLBACK_ERROR;
   }
   
   sprintf(buffer,"sudo useradd -p %s %s",password,username);
@@ -66,7 +74,7 @@ int callback_create_user (const struct _u_request * request, struct _u_response 
     body=json_pack("{s:s}",
     "error","error creando usuario en el sistema");
     ulfius_set_json_body_response(response, 500, body);
-    return U_CALLBACK_CONTINUE;
+    return U_CALLBACK_ERROR;
   }else{
     body=json_pack("{s:i,s:s,s:s}",
       "id",entry->pw_uid,
@@ -74,8 +82,6 @@ int callback_create_user (const struct _u_request * request, struct _u_response 
       "created_at",buffer
     );
   }
-
-  endpwent();
   ulfius_set_json_body_response(response, 200, body);
 
   return U_CALLBACK_CONTINUE;
@@ -92,8 +98,8 @@ int main(void) {
     return(1);
   }
   // Endpoint list declaration
-  ulfius_add_endpoint_by_val(&instance, "GET", "/", NULL, 0, &callback_list_users, NULL);
-  ulfius_add_endpoint_by_val(&instance, "POST", "/", NULL, 0, &callback_create_user, NULL);
+  ulfius_add_endpoint_by_val(&instance, "POST", "", NULL, 0, &callback_create_user, NULL);
+  ulfius_add_endpoint_by_val(&instance, "GET", "", NULL, 0, &callback_list_users, NULL);
   // Start the framework
   if (ulfius_start_framework(&instance) == U_OK) {
     printf("Start framework on port %d\n", instance.port);
