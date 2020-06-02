@@ -25,7 +25,7 @@ int callback_list_users (const struct _u_request * request, struct _u_response *
     entry=getpwent();
   }
   ulfius_set_json_body_response(response, 200, body);
-  setpwent();
+  endpwent();
   return U_CALLBACK_CONTINUE;
 }
 
@@ -61,7 +61,6 @@ int callback_create_user (const struct _u_request * request, struct _u_response 
     }
     entry=getpwent();
   }
-  setpwent();
   endpwent();
   ulfius_set_json_body_response(response, 200, body);
 
