@@ -18,7 +18,7 @@ int callback_list_users (const struct _u_request * request, struct _u_response *
   json_t *body;
   while(entry!=NULL){
     json_t* user=json_pack("{s:i,s:s}",
-      "userid",entry->pw_uid,
+      "user_id",entry->pw_uid,
       "username",entry->pw_name
     );
     json_array_append(array,user);
