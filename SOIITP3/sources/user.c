@@ -12,7 +12,7 @@
 #define PORT 8082
 #define TAM 256
 
-int32_t findUser(struct passwd* entry,const char* username);
+struct passwd* findUser(struct passwd* entry,const char* username);
 
 int callback_list_users (const struct _u_request * request, struct _u_response * response, void * user_data) {
   struct passwd* entry=getpwent();
@@ -49,8 +49,9 @@ int callback_create_user (const struct _u_request * request, struct _u_response 
   char password[TAM];
   sprintf(password,"%c%s%c",34,json_string_value(json_object_get(body,"password")),34);
   
-  struct passwd* entry=calloc(1,sizeof(struct passwd*));
-  if(findUser(entry,username)){
+  struct passwd* entry=calloc(1,sizeof(entry));
+  entry=findUser(entry,username);
+  if(entry!=NULL){
     body=json_pack("{s:s}",
     "description","El nombre de usuario solicitado ya existe");
     ulfius_set_json_body_response(response, 409, body);
@@ -67,11 +68,12 @@ int callback_create_user (const struct _u_request * request, struct _u_response 
   struct tm *tlocal = localtime(&tiempo);  
   strftime(buffer,TAM,"%d/%m/%y %H:%M:%S",tlocal);
 
-   
-  if(!findUser(entry,username)){
+  entry=findUser(entry,username);
+  if(entry==NULL){
     body=json_pack("{s:s}",
     "error","error creando usuario en el sistema");
     ulfius_set_json_body_response(response, 500, body);
+    endpwent();
     return U_CALLBACK_CONTINUE;
   }else{
     body=json_pack("{s:i,s:s,s:s}",
@@ -79,7 +81,7 @@ int callback_create_user (const struct _u_request * request, struct _u_response 
       "username",entry->pw_name,
       "created_at",buffer
     );
-     endpwent();
+    endpwent();
   }
   ulfius_set_json_body_response(response, 200, body);
 
@@ -113,14 +115,14 @@ int main(void) {
   return 0;
 }
 
-int32_t findUser(struct passwd* entry,const char* username){
+struct passwd* findUser(struct passwd* entry,const char* username){
   entry=getpwent();
   while(entry!=NULL){
     if(!(strcmp(entry->pw_name,username))){
-      return 1;
+      return entry;
     }
     entry=getpwent();
   }
   endpwent();
-  return 0;
+  return NULL;
 }
