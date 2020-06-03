@@ -53,7 +53,7 @@ server {
 
 	location /api/servers/ {
 		auth_basic 				"Administrator's Area";
-		auth_basic_user_file 	/etc/apache2/.htpasswd;
+		auth_basic_user_file 	/etc/tp3/.htpasswd;
 		proxy_pass 				http://localhost:8081/;
 		# First attempt to serve request as file, then
 		# as directory, then fall back to displaying a 404.
@@ -61,7 +61,7 @@ server {
 
 	location /api/users/ {
 		auth_basic 				"Administrator's Area";
-		auth_basic_user_file 	/etc/apache2/.htpasswd;
+		auth_basic_user_file 	/etc/tp3/.htpasswd;
 		proxy_pass 				http://localhost:8082/;
 		# First attempt to serve request as file, then
 		# as directory, then fall back to displaying a 404.

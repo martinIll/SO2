@@ -4,8 +4,7 @@ Description= tp3 users
 [Service]
 Type=simple
 ExecStart=/usr/bin/tp3_user
-User=martin
-Group=martin
+User=tp3user
 
 [Install]
 WantedBy=multi-user.target
