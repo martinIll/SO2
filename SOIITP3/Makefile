@@ -23,21 +23,20 @@ clean :
 docs:
 	doxygen doxyfile
 install:
-	useradd -p $(openssl passwd -1 contraseña) tp3user
+	#!/bin/bash
+	sudo useradd -p contraseña tp3user
 	echo 'tp3user ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
-	cd bin
-	sudo cp -f user /usr/bin/tp3_user
-	sudo cp -f servers /usr/bin/tp3_servers
-	cd ../resources
-	sudo cp -f tp3_servers.service /lib/systemd/system/tp3_servers.service
-	sudo cp -f tp3_users.service /lib/systemd/system/tp3_users.service
+	sudo cp -f ./bin/user /usr/bin/tp3_user
+	sudo cp -f ./bin/servers /usr/bin/tp3_servers
+	sudo cp -f ./resources/tp3_servers.service /lib/systemd/system/tp3_servers.service
+	sudo cp -f ./resources/tp3_users.service /lib/systemd/system/tp3_users.service
 	sudo systemctl start tp3_servers.service
 	sudo systemctl start tp3_users.service
 	sudo systemctl enable tp3_users.service
 	sudo systemctl enable tp3_users.service
-	sudo cp -f tp3 /etc/nginx/sites-available/tp3
+	sudo cp -f ./resources/tp3 /etc/nginx/sites-available/tp3
 	sudo ln -s /etc/nginx/sites-available/tp3 /etc/nginx/sites-enabled/tp3
-	sudo mkdir /etc/tp3
-	sudo htpasswd  -p CONTRASENA -c /etc/tp3/.htpasswd USER 
+	sudo mkdir -p /etc/tp3
+	sudo htpasswd   -b -c /etc/tp3/.htpasswd USER CONTRASENA 
 	sudo systemctl restart nginx.service
 
