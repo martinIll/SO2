@@ -54,7 +54,10 @@ int callback_create_user (const struct _u_request * request, struct _u_response 
     body=json_pack("{s:s}",
     "description","El nombre de usuario solicitado ya existe");
     ulfius_set_json_body_response(response, 409, body);
+    endpwent();
     return U_CALLBACK_COMPLETE;
+  }else{
+     endpwent();
   }
 
   
@@ -76,6 +79,7 @@ int callback_create_user (const struct _u_request * request, struct _u_response 
       "username",entry->pw_name,
       "created_at",buffer
     );
+     endpwent();
   }
   ulfius_set_json_body_response(response, 200, body);
 
@@ -113,7 +117,6 @@ int32_t findUser(struct passwd* entry,const char* username){
   entry=getpwent();
   while(entry!=NULL){
     if(!(strcmp(entry->pw_name,username))){
-      endpwent();
       return 1;
     }
     entry=getpwent();
