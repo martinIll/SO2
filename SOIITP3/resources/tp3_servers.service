@@ -1,0 +1,9 @@
+[Unit]
+Description= tp3 servers
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/tp3_servers
+
+[Install]
+WantedBy=multi-user.target

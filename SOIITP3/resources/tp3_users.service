@@ -1,0 +1,12 @@
+[Unit]
+Description= tp3 users
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/tp3_user
+User=martin
+Group=martin
+
+[Install]
+WantedBy=multi-user.target
+
