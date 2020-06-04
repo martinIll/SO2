@@ -33,7 +33,7 @@ install:
 	sudo systemctl start tp3_servers.service
 	sudo systemctl start tp3_users.service
 	sudo systemctl enable tp3_users.service
-	sudo systemctl enable tp3_users.service
+	sudo systemctl enable tp3_servers.service
 	sudo cp -f ./resources/tp3 /etc/nginx/sites-available/tp3
 	sudo ln -s /etc/nginx/sites-available/tp3 /etc/nginx/sites-enabled/tp3
 	sudo mkdir -p /etc/tp3
@@ -43,6 +43,6 @@ install:
 	sudo chown tp3user /var/log/tp3
 	sudo touch /var/log/tp3/tp3.log
 	sudo chown tp3user /var/log/tp3/tp3.log
-	sudo cp -f ./resources/pagina /var/www/html/pagina
+	sudo cp -fr ./resources/pagina /var/www/html/pagina
 	sudo chown -R tp3user /var/www/html/pagina
 
