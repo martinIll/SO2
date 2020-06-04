@@ -127,7 +127,7 @@
         $("#adduser").click(function(){
            var username=$("#username").val();
            var password=$("#password").val();
-           $.post('http://192.168.0.25/api/users/', {username:username, password:password},function(data){
+           $.post('/api/users/', {username:username, password:password},function(data){
                alert(data);
            });
         });
