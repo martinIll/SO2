@@ -41,4 +41,6 @@ install:
 	sudo systemctl restart nginx.service
 	sudo mkdir -p /var/log/tp3
 	sudo chown tp3user /var/log/tp3
+	sudo touch /var/log/tp3/tp3.log
+	sudo chown tp3user /var/log/tp3/tp3.log
 
