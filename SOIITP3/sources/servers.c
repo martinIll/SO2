@@ -55,7 +55,7 @@ int callback_hardware_info (const struct _u_request * request, struct _u_respons
                           "uptime",keywords[7]
                           );
   ulfius_set_json_body_response(response, 200, body);
-   y_log_message(Y_LOG_LEVEL_INFO, "estadisticas requeridas desde %s", u_map_get(request->map_header, "X-Real-IP"));
+  y_log_message(Y_LOG_LEVEL_INFO, "estadisticas requeridas desde %s", u_map_get(request->map_header, "X-Real-IP"));
   return U_CALLBACK_CONTINUE;
 }
 
@@ -112,8 +112,6 @@ void getInfo(char* keywords[],char* searchBy[],const char *filename, int * index
 }
 
 void getLoadAvg(char* keywords[],int index){
-  printf("%d",index);
-  
   char buffer[TAM];
 	FILE* fp;
 	fp = fopen ("/proc/loadavg", "r");
@@ -130,7 +128,6 @@ void getLoadAvg(char* keywords[],int index){
 void getUptime(char* keywords[],int index){
   FILE* fp;
 	double uptime;
-  printf("%d",index);
 	fp = fopen ("/proc/uptime", "r");
   if(fscanf (fp, "%lf\n", &uptime)==EOF){
     fclose (fp);
@@ -153,7 +150,6 @@ void  getDiskInfo(char* keywords[],int index){
     perror("error al obtener estadisticas de fs");
     return;
   }
-  printf("%ld %d\n",buf->f_blocks,(int32_t)buf->f_bsize);
   sprintf(keywords[index],"%ld GB",(buf->f_blocks*(unsigned)buf->f_bsize)/(1024*1024*1024));
   sprintf(keywords[index+1],"%ld GB",(buf->f_bfree*(unsigned)buf->f_bsize)/(1024*1024*1024));
 }

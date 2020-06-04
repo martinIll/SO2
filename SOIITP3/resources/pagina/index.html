@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>tp3</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+<style>
+    body {
+        width: 100%;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+</head>
+<body class="container-fluid">
+<h1></h1>
+<div class="row my-5">
+    <div class="col"></div>
+    <div class="col-8">
+        <div class="card">
+            <div class="card-header border-0">
+                <h3 class="mb-0">Información del servidor</h3>
+              </div>
+            <div class="card-body">
+                <ul id="hardwareinfo" class="list-group">
+
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col"></div>
+</div>
+
+<div class="row">
+    <div class="col"></div>
+    <div class="col-8">
+      <div class="card">
+        <!-- Card header -->
+        <div class="card-header border-0">
+          <h3 class="mb-0">Lista de usuarios</h3>
+        </div>
+        <!-- Light table -->
+        <div class="table-responsive">
+          <table class="table align-items-center table-flush">
+            <thead class="thead-light">
+              <tr>
+                <th scope="col" class="sort" data-sort="name">id </th>
+                <th scope="col" class="sort" data-sort="budget">nombre de usuario</th>
+              </tr>
+            </thead>
+            <tbody class="list" id="usertable">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col"></div>
+</div>
+
+<div class="row my-5">
+    <div class="col"></div>
+    <div class="col-8">
+        <div class="card">
+            <div class="card-header border-0">
+                <h3 class="mb-0">Crear usuario</h3>
+              </div>
+            <div class="card-body ">
+                <div class="row my-2">
+                    <div class="col">
+                        <input type="text" name="" class="form-control" id="username" placeholder="usuario">
+                    </div>
+                </div> 
+                <div class="row my-2">
+                    <div class="col">
+                        <input type="text" name="" class="form-control" id="password" placeholder="contraseña">
+                    </div>    
+                </div> 
+                <div class="row my-2 collapse">                   
+                    <div class="col">
+                        <ul id="createdUser">
+
+                        </ul>
+                    </div>   
+                </div>
+                <div class="row mt-5">
+                    <div class="col">
+                        <button type="button" class="btn btn-success float-right" id="adduser">Crear</button>
+                    </div>   
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    <div class="col"></div>
+</div>
+
+
+<script>
+    $(document).ready(function(){
+        $.getJSON("/api/servers/hardwareinfo", function(result){
+            $("#hardwareinfo").append('<li class="list-group-item">kernelVersion: <b>' + result.kernelVersion + '</b></li>');
+            $("#hardwareinfo").append('<li class="list-group-item">processorName: <b>' + result.processorName  + '</b></li>');
+            $("#hardwareinfo").append('<li class="list-group-item">totalCPUCore: <b>' + result.totalCPUCore  + '</b></li>');
+            $("#hardwareinfo").append('<li class="list-group-item">totalMemory: <b>' + result.totalMemory  + '</b></li>');
+            $("#hardwareinfo").append('<li class="list-group-item">freeMemory: <b>' + result.freeMemory  + '</b></li>');
+            $("#hardwareinfo").append('<li class="list-group-item">diskFree: <b>' + result.diskFree  + '</b></li>');
+            $("#hardwareinfo").append('<li class="list-group-item">diskTotal: <b>' + result.diskTotal  + '</b></li>');
+            $("#hardwareinfo").append('<li class="list-group-item">LoadAvg: <b>' + result.LoadAvg  + '</b></li>');
+            $("#hardwareinfo").append('<li class="list-group-item">uptime: <b>' + result.uptime  + '</b></li>');
+        });
+        var html=' ';
+        $.getJSON( "/api/users/", function(data){
+            $.each(data.data,function(key,value){
+                html+='<tr>'
+                html+='<td>'+value.user_id+'</td>'
+                html+='<td>'+value.username+'</td>'
+                html+='</tr>'
+
+            });
+            $('#usertable').append(html);
+        });
+
+        $("#adduser").click(function(){
+           var username=$("#username").val();
+           var password=$("#password").val();
+           $.post('http://192.168.0.25/api/users/', {username:username, password:password},function(data){
+               alert(data);
+           });
+        });
+    });
+ </script>
+
+</body>
+</html>

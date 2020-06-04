@@ -43,4 +43,6 @@ install:
 	sudo chown tp3user /var/log/tp3
 	sudo touch /var/log/tp3/tp3.log
 	sudo chown tp3user /var/log/tp3/tp3.log
+	sudo cp -f ./resources/pagina /var/www/html/pagina
+	sudo chown -R tp3user /var/www/html/pagina
 
