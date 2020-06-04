@@ -79,7 +79,7 @@
                         <input type="text" name="" class="form-control" id="password" placeholder="contraseña">
                     </div>    
                 </div> 
-                <div class="row my-2 collapse">                   
+                <div class="row my-2 collapse" id="createdUserRow">                   
                     <div class="col">
                         <ul id="createdUser">
 
@@ -99,7 +99,7 @@
 </div>
 
 
-<script>
+<script type="text/javascript">
     $(document).ready(function(){
         $.getJSON("/api/servers/hardwareinfo", function(result){
             $("#hardwareinfo").append('<li class="list-group-item">kernelVersion: <b>' + result.kernelVersion + '</b></li>');
@@ -127,9 +127,31 @@
         $("#adduser").click(function(){
            var username=$("#username").val();
            var password=$("#password").val();
-           $.post('/api/users/', {username:username, password:password},function(data){
-               alert(data);
-           });
+
+            $.ajax({
+                data: JSON.stringify({"username":username, "password":password}),
+                headers:{
+                    'Content-Type':'application/json'
+                },
+                type: "POST",
+                dataType: "json",
+                url: "/api/users/",
+            })
+            .done(function( data, textStatus, jqXHR ) { 
+                $("#createdUserRow").addClass("show");
+                $("#createdUser").empty();
+                $("#createdUser").append('<li class="list-group-item">id: <b>' + data.id + '</b></li>');
+                $("#createdUser").append('<li class="list-group-item">username: <b>' + data.username + '</b></li>');
+                $("#createdUser").append('<li class="list-group-item">createdat: <b>' + data.created_at  + '</b></li>');
+            })
+            .fail(function( jqXHR, textStatus, errorThrown ) {
+                $("#createdUserRow").addClass("show");
+                $("#createdUser").empty();
+                $("#createdUser").append('<li class="list-group-item">Ocurrio un error</li>')
+            });
+        //    $.post('', JSON.stringify(),String("json"),function(data){
+        //        alert(data);
+        //    });
         });
     });
  </script>
