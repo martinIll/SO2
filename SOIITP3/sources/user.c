@@ -8,6 +8,7 @@
 #include <crypt.h>
 #include<string.h>
 #include <time.h>
+#include <yder.h>
 
 #define PORT 8082
 #define TAM 256
@@ -28,6 +29,7 @@ int callback_list_users (const struct _u_request * request, struct _u_response *
   }
 
   body=json_pack("{s:o}", "data", array);
+  y_log_message(Y_LOG_LEVEL_INFO, "cantidad de usuarios %d", json_array_size(array));
 
   ulfius_set_json_body_response(response, 200, body);
   endpwent();
@@ -81,6 +83,7 @@ int callback_create_user (const struct _u_request * request, struct _u_response 
       "username",entry->pw_name,
       "created_at",buffer
     );
+    y_log_message(Y_LOG_LEVEL_INFO, "usuario  %d creado", entry->pw_uid);
     endpwent();
   }
   ulfius_set_json_body_response(response, 200, body);
@@ -104,6 +107,7 @@ int main(void) {
   // Start the framework
   if (ulfius_start_framework(&instance) == U_OK) {
     printf("Start framework on port %d\n", instance.port);
+    y_init_logs("users",Y_LOG_MODE_FILE,Y_LOG_LEVEL_INFO,"/var/log/tp3/tp3.log", "Initializing logs mode: console, logs level: info");
     // Wait for the user to press <enter> on the console to quit the application
     pause();
   } else {

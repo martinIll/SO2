@@ -7,7 +7,7 @@ USER=user
 # Opt de compilacion 
 CC=gcc 
 CFLAGS=-std=gnu11  -Wall -Werror -pedantic -Wextra -Wno-unused-parameter -Wconversion -g  
-LIB=-lulfius -ljansson -lcrypt
+LIB=-lulfius -ljansson -lyder
 
 all : build
 build : $(SOURCE)/servers.c $(SOURCE)/user.c
@@ -39,4 +39,6 @@ install:
 	sudo mkdir -p /etc/tp3
 	sudo htpasswd   -b -c /etc/tp3/.htpasswd USER CONTRASENA 
 	sudo systemctl restart nginx.service
+	sudo mkdir -p /var/log/tp3
+	sudo chown tp3user /var/log/tp3
 

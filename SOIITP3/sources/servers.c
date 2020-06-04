@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/statfs.h>
 #include <sys/utsname.h>
+#include <yder.h>
 #define PORT 8081
 #define TAM 1024
 
@@ -54,6 +55,7 @@ int callback_hardware_info (const struct _u_request * request, struct _u_respons
                           "uptime",keywords[7]
                           );
   ulfius_set_json_body_response(response, 200, body);
+   y_log_message(Y_LOG_LEVEL_INFO, "estadisticas requeridas desde %s", u_map_get(request->map_header, "X-Real-IP"));
   return U_CALLBACK_CONTINUE;
 }
 
@@ -73,6 +75,9 @@ int main(void) {
   // Start the framework
   if (ulfius_start_framework(&instance) == U_OK) {
     printf("Start framework on port %d\n", instance.port);
+    y_init_logs("servers",Y_LOG_MODE_FILE,Y_LOG_LEVEL_INFO,"/var/log/tp3/tp3.log", "Initializing logs mode: console, logs level: info");
+   
+
     // Wait for the user to press <enter> on the console to quit the application
     pause();
   } else {
@@ -148,7 +153,7 @@ void  getDiskInfo(char* keywords[],int index){
     perror("error al obtener estadisticas de fs");
     return;
   }
-  printf("%ld %d\n",buf->f_blocks,buf->f_bsize);
+  printf("%ld %d\n",buf->f_blocks,(int32_t)buf->f_bsize);
   sprintf(keywords[index],"%ld GB",(buf->f_blocks*(unsigned)buf->f_bsize)/(1024*1024*1024));
   sprintf(keywords[index+1],"%ld GB",(buf->f_bfree*(unsigned)buf->f_bsize)/(1024*1024*1024));
 }
