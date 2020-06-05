@@ -15,17 +15,26 @@ void getUptime(char* keywords[],int index);
 void  getDiskInfo(char* keywords[],int index);
 void getKernelVersion(char* keywords[],int index);
 
+/**
+ * @brief callback que atiende el metodo get al servicio en este se llena el json con los datos del sistema y se envia la respuesta
+
+ *@returns int32_t
+
+*/
 int callback_hardware_info (const struct _u_request * request, struct _u_response * response, void * user_data) {
  
   char * keywords[12];
   char* searchBy[2];
   int32_t index=0;
+  //inicializo ambos arreglos de char
   for(int i=0;i<12;i++){
     keywords[i]=calloc(256,sizeof(char));
   }
   for(int i=0;i<2;i++){
     searchBy[i]=calloc(256,sizeof(char));
   }
+
+  //ingreso las palabras deseadas y luego busco en el archivo correspondiente
 
   strcpy(searchBy[0],"model name");
   strcpy(searchBy[1],"cpu cores");
@@ -42,7 +51,7 @@ int callback_hardware_info (const struct _u_request * request, struct _u_respons
   getUptime(keywords,index);
   index++;
   getKernelVersion(keywords,index);
-  
+  //construyo el json con los datos obtenidos
   json_t *body = json_pack("{s:s, s:s, s:s, s:s, s:s, s:s, s:s, s:s, s:s}",
                           "kernelVersion",keywords[8],
                           "processorName",keywords[0],
@@ -55,14 +64,18 @@ int callback_hardware_info (const struct _u_request * request, struct _u_respons
                           "uptime",keywords[7]
                           );
   ulfius_set_json_body_response(response, 200, body);
+  //hago el log del request
   y_log_message(Y_LOG_LEVEL_INFO, "estadisticas requeridas desde %s", u_map_get(request->map_header, "X-Real-IP"));
   return U_CALLBACK_CONTINUE;
 }
 
 
 /**
- * main function
- */
+ * @brief funcion main se inicializa el servicio y el logger yder que luego se utilizara en los servicios acto seguido el servicioe spera request indefinidamente
+
+ *@returns int32_t
+
+*/
 int main(void) {
   struct _u_instance instance;
   // Initialize instance with the port number
@@ -75,6 +88,7 @@ int main(void) {
   // Start the framework
   if (ulfius_start_framework(&instance) == U_OK) {
     printf("Start framework on port %d\n", instance.port);
+    //inicializo loggin de yder en /var/log/tp3/tp3.log
     y_init_logs("servers",Y_LOG_MODE_FILE,Y_LOG_LEVEL_INFO,"/var/log/tp3/tp3.log", "Initializing logs mode: console, logs level: info");
    
 
@@ -88,14 +102,21 @@ int main(void) {
   ulfius_clean_instance(&instance);
   return 0;
 }
+/**
+ * @brief funcion que se usa para obter los datos de cpu y de memoria recibe guardando los valores buscados en el arreglo keywords a partir de la posicion index,
+ * @param char* keywords[] arreglo de char* donde se guardaran los valores
+ * @param  char* searchBy arreglo de char* que contiene las palabras clave buscadas
+ * @param const char* filename nombre de archivo donde se busca
+ * @param int index indice a partir del cual se escribe keywords
+ *@returns void
 
+*/
 void getInfo(char* keywords[],char* searchBy[],const char *filename, int * index){
   char buffer[1024];
 
   FILE *fp=fopen(filename,"r");
   if (fp == NULL) {
     printf("Failed to run command\n" );
-    exit(1);
   }
 
   //busca las palabras clave
@@ -111,9 +132,20 @@ void getInfo(char* keywords[],char* searchBy[],const char *filename, int * index
   fclose(fp);
 }
 
+
+
+/**
+ * @brief funcion que se usa para obtener el promedio de carga del sistema  a partir del archivo /proc/loadavg,
+ * @param char* keywords[] arreglo de char* donde se guardaran los valores
+ * @param int index indice a partir del cual se escribe keywords
+ *@returns void
+
+*/
+
 void getLoadAvg(char* keywords[],int index){
   char buffer[TAM];
 	FILE* fp;
+  //abro el archivo y recupero el dato correspondiente
 	fp = fopen ("/proc/loadavg", "r");
 	
   if(fgets (buffer, 5, fp)!=NULL){
@@ -124,16 +156,24 @@ void getLoadAvg(char* keywords[],int index){
 }
 
 
+/**
+ * @brief funcion que se usa para obtener el uptime del sistema  a partir del archivo /proc/uptime,
+ * @param char* keywords[] arreglo de char* donde se guardaran los valores
+ * @param int index indice a partir del cual se escribe keywords
+ *@returns void
 
+*/
 void getUptime(char* keywords[],int index){
   FILE* fp;
 	double uptime;
+  //abro el archivo y recupero el dato correspondiente
 	fp = fopen ("/proc/uptime", "r");
   if(fscanf (fp, "%lf\n", &uptime)==EOF){
     fclose (fp);
     return;
   }
   fclose (fp);
+  //parseo el tiempo
 	long time = (long) uptime; 
 	const long minute = 60;
 	const long hour = minute * 60;
@@ -143,6 +183,14 @@ void getUptime(char* keywords[],int index){
 }
 
 
+/**
+ * @brief funcion que se usa para obtener informacion sobre el disco usando la funcion statfs  y escribiendo los tamaños del mismo en GB en keywords,
+ * @param char* keywords[] arreglo de char* donde se guardaran los valores
+ * @param int index indice a partir del cual se escribe keywords
+ *@returns void
+
+*/
+
 void  getDiskInfo(char* keywords[],int index){
   struct statfs *buf=calloc(1,sizeof(struct statfs));
   
@@ -150,10 +198,19 @@ void  getDiskInfo(char* keywords[],int index){
     perror("error al obtener estadisticas de fs");
     return;
   }
+  //escribo freedisk y totaldisk en GB usando el tamaño de bloque de statfs
   sprintf(keywords[index],"%ld GB",(buf->f_blocks*(unsigned)buf->f_bsize)/(1024*1024*1024));
   sprintf(keywords[index+1],"%ld GB",(buf->f_bfree*(unsigned)buf->f_bsize)/(1024*1024*1024));
 }
 
+
+/**
+ * @brief se obtiene la informacion a traves de la funcion uname ,
+ * @param char* keywords[] arreglo de char* donde se guardaran los valores
+ * @param int index indice a partir del cual se escribe keywords
+ *@returns void
+
+*/
 void getKernelVersion(char* keywords[],int index){
   struct utsname *buf=calloc(1,sizeof(struct utsname));
  
@@ -161,6 +218,6 @@ void getKernelVersion(char* keywords[],int index){
     perror("error al obtener estadisticas de fs");
     return;
   }
-
+  //guardo la version del kernel
   sprintf(keywords[index],"%s",buf->release);
 }
